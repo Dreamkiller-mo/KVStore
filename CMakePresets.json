@@ -1,0 +1,65 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired":
+    {
+        "major": 3,
+        "minor": 20,
+        "patch": 0
+    },
+    "configurePresets":
+    [
+        {
+            "name": "base",
+            "hidden": true,
+            "generator" : "Ninja",
+            "binaryDir" : "${sourceDir}/build/${presetName}",
+            "cacheVariables":
+            {
+                "CMAKE_EXPORT_COMPILE_COMMANDS" : "ON"
+            }
+        },
+        {
+            "name" : "debug",
+            "displayName": "Debug 开发版本(Ninja + compile_commands)",
+            "description": "Debug build",
+            "inherits" : "base",
+            "cacheVariables":
+            {
+                "CMAKE_BUILD_TYPE" : "Debug"
+            }
+        },
+        {
+            "name": "release",
+            "displayName": "Release 发布版本(Ninja + compile_commands)",
+            "description": "Release build",
+            "inherits" : "base",
+            "cacheVariables":
+            {
+                "CMAKE_BUILD_TYPE" : "Release"
+            }
+        }
+    ],
+    "buildPresets":
+    [
+        {
+            "name" : "debug",
+            "configurePreset": "debug"
+        },
+        {
+            "name": "release",
+            "configurePreset": "release"
+        },
+        {
+            "name": "clean-debug",
+            "displayName": "清理 Debug",
+            "configurePreset": "debug",
+            "targets": ["clean"]
+        },
+        {
+            "name": "clean-release",
+            "displayName": "清理 Release",
+            "configurePreset": "release",
+            "targets": ["clean"]
+        }
+    ]
+}

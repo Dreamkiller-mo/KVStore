@@ -1,0 +1,32 @@
+build/
+
+#软链接
+compile_commands.json
+
+# CMake 相关缓存文件（build/已经忽略，下面是兜底，防止有人在根目录cmake）
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+
+# 可执行文件、库（兜底）
+*.so
+*.so.*
+*.a
+*.dll
+*.exe
+*.lib
+*.pdb
+
+# 临时文件
+*.log
+*.tmp
+*.swp
+*.swo
+
+# IDE
+.vscode/.cache
+.vscode/settings.json
+.vscode/tasks.json
+# 如果你想保留vscode配置，删掉上面三行
+.idea/
