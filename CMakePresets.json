@@ -37,6 +37,28 @@
             {
                 "CMAKE_BUILD_TYPE" : "Release"
             }
+        },
+        {
+            "name": "relwithdebinfo",
+            "displayName": "RelWithDebInfo 性能分析版本(-O2 + 调试符号)",
+            "description": "Optimized build with debug info: 用于 cachegrind/callgrind 等分析",
+            "inherits": "base",
+            "cacheVariables":
+            {
+                "CMAKE_BUILD_TYPE" : "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "asan",
+            "displayName": "ASan + UBSan 正确性检查版本",
+            "description": "AddressSanitizer + UndefinedBehaviorSanitizer",
+            "inherits": "base",
+            "cacheVariables":
+            {
+                "CMAKE_BUILD_TYPE" : "Debug",
+                "CMAKE_CXX_FLAGS" : "-fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all -g",
+                "CMAKE_EXE_LINKER_FLAGS" : "-fsanitize=address,undefined"
+            }
         }
     ],
     "buildPresets":
@@ -50,6 +72,14 @@
             "configurePreset": "release"
         },
         {
+            "name": "relwithdebinfo",
+            "configurePreset": "relwithdebinfo"
+        },
+        {
+            "name": "asan",
+            "configurePreset": "asan"
+        },
+        {
             "name": "clean-debug",
             "displayName": "清理 Debug",
             "configurePreset": "debug",
@@ -60,6 +90,38 @@
             "displayName": "清理 Release",
             "configurePreset": "release",
             "targets": ["clean"]
+        }
+    ],
+    "testPresets":
+    [
+        {
+            "name": "debug",
+            "configurePreset": "debug",
+            "output": { "outputOnFailure": true },
+            "filter": { "exclude": { "label": "benchmark" } }
+        },
+        {
+            "name": "release",
+            "configurePreset": "release",
+            "output": { "outputOnFailure": true },
+            "filter": { "exclude": { "label": "benchmark" } }
+        },
+        {
+            "name": "relwithdebinfo",
+            "configurePreset": "relwithdebinfo",
+            "output": { "outputOnFailure": true },
+            "filter": { "exclude": { "label": "benchmark" } }
+        },
+        {
+            "name": "asan",
+            "configurePreset": "asan",
+            "environment":
+            {
+                "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+                "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1"
+            },
+            "output": { "outputOnFailure": true },
+            "filter": { "exclude": { "label": "benchmark" } }
         }
     ]
 }

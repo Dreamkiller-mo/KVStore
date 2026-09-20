@@ -4,8 +4,19 @@ set(ENGINE_SOURCES
     memory_engine/memory_kv_store.cc
 )
 
-# 静态库
-add_library(agent_kv_lib STATIC ${ENGINE_SOURCES})
+# 根据选项切换静态/动态库
+if(AGENTKV_BUILD_SHARED)
+  add_library(agent_kv_lib SHARED ${ENGINE_SOURCES})
+else()
+  add_library(agent_kv_lib STATIC ${ENGINE_SOURCES})
+endif()
 
-# 后续加RocksDB引擎只需要在这里追加文件，和链接库
-# target_link_libraries(agent_kv_lib PRIVATE rocksdb)
+target_compile_features(agent_kv_lib PUBLIC cxx_std_20)
+
+# agent_kv_lib
+target_include_directories(
+    agent_kv_lib
+    PUBLIC  ${PROJECT_SOURCE_DIR}/include
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} # src/ 目录，内部头文件
+)
+
