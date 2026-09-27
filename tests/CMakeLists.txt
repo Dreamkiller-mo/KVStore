@@ -9,6 +9,7 @@ add_executable(agent_kv_test ${TEST_SOURCES} )
 target_link_libraries(
     agent_kv_test PRIVATE 
     agent_kv_lib
+    AgentKV::warnings
     benchmark::benchmark
     benchmark::benchmark_main
 )

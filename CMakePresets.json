@@ -64,19 +64,28 @@
     "buildPresets":
     [
         {
+            "name" : "jobs",
+            "hidden": true,
+            "jobs": 8
+        },
+        {
             "name" : "debug",
+            "inherits" : "jobs",
             "configurePreset": "debug"
         },
         {
             "name": "release",
+            "inherits" : "jobs",
             "configurePreset": "release"
         },
         {
             "name": "relwithdebinfo",
+            "inherits" : "jobs",
             "configurePreset": "relwithdebinfo"
         },
         {
             "name": "asan",
+            "inherits" : "jobs",
             "configurePreset": "asan"
         },
         {

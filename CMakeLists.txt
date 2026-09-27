@@ -2,28 +2,32 @@ cmake_minimum_required(VERSION 3.20)
 project(AgentKV VERSION 0.1 LANGUAGES CXX)
 
 # ---- 全局配置 ----
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# 默认构建类型，避免用户直接 cmake 时没有优化/调试信息
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
-endif()
+set(CMAKE_CXX_STANDARD 20)              # -std=20
+set(CMAKE_CXX_STANDARD_REQUIRED ON)     # 编译器不支持c++20 → 配置阶段直接报错，不降级
+set(CMAKE_CXX_EXTENSIONS OFF)           # 是否支持拓展
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)   # 配置阶段是否在构建目录下生成 compile_commands.json 文件
 
 # ---- 全局选项 ----
 option(AGENTKV_BUILD_TESTS "Build unit tests" ON)
 option(AGENTKV_BUILD_SHARED "Build shared lib" OFF)
 option(AGENTKV_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 
-# ---- 警告选项（不再硬编码 -O2） ----
-if(NOT MSVC)
-    add_compile_options(-Wall -Wextra -Wpedantic)
-    if(AGENTKV_WARNINGS_AS_ERRORS)
-        add_compile_options(-Werror)
-    endif()
-endif()
+# ---- warning lib ----
+add_library(agentkv_warnings INTERFACE)
+add_library(AgentKV::warnings ALIAS agentkv_warnings)           # 别名 AgentKV::warning
+
+target_compile_options(agentkv_warnings INTERFACE
+    # GCC / Clang
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wextra>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wpedantic>
+    # MSVC
+    $<$<CXX_COMPILER_ID:MSVC>:/W4>
+    $<$<CXX_COMPILER_ID:MSVC>:/permissive->
+    # Werror
+    $<$<AND:$<NOT:$<CXX_COMPILER_ID:MSVC>>,$<BOOL:${AGENTKV_WARNINGS_AS_ERRORS}>>:-Werror>          # not MSVC && AGENTKV_WARNINGS_AS_ERRORS
+    $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<BOOL:${AGENTKV_WARNINGS_AS_ERRORS}>>:/WX>                     # MSVC && AGENTKV_WARNINGS_AS_ERRORS
+)
 
 # ---- 测试支持 ----
 include(CTest)
