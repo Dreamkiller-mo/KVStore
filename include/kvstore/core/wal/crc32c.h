@@ -6,7 +6,7 @@
 namespace kvstore::core::wal
 {
 
-class CRC32
+class CRC32C
 {
 public:
 

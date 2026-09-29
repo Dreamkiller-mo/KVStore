@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <cstddef>
 #include <vector>
 #include <cstdint>
@@ -15,6 +16,8 @@ public:
     explicit Encoder( std::vector<uint8_t>& buffer ) : buffer_(buffer) {}
 
     void PutUint64(uint64_t value);
+
+    void PutUint64At(std::size_t offset, std::uint64_t value);
 
     void PutUint32(uint32_t value);
 

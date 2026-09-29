@@ -1,4 +1,4 @@
-#include "../../include/kvstore/core/wal/wal_record.h"
+#include <kvstore/core/wal/wal_record.h>
 #include <cstdint>
 
 using namespace kvstore::core::wal;

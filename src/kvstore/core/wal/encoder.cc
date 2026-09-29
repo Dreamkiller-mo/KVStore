@@ -1,4 +1,5 @@
-#include "../../include/kvstore/core/wal/encoder.h"
+#include <cstddef>
+#include <kvstore/core/wal/encoder.h>
 #include <cstdint>
 #include <span>
 
@@ -19,6 +20,14 @@ void Encoder::PutUint32(uint32_t value)
     for (int i = 0; i < 4; i++)
     {
         buffer_.push_back(static_cast<uint8_t>(value >> (i * 8)));
+    }
+}
+
+void Encoder::PutUint64At(std::size_t offset, std::uint64_t value)
+{
+    for(int i = 0; i < 8; i++)
+    {
+        buffer_[offset + i] = static_cast<std::uint8_t>(value >> (i * 8));
     }
 }
 

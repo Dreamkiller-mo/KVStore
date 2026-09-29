@@ -9,7 +9,8 @@ namespace kvstore
 enum class StatusCode : uint8_t 
 {
     Ok,
-    NotFound
+    NotFound,
+    Corruption
 };
 
 class Status 

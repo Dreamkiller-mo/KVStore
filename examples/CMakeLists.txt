@@ -1,3 +1,4 @@
-# demo示例程序
-add_executable(kv_demo demo.cpp)
-target_link_libraries(kv_demo PRIVATE agent_kv_lib)
+# basic_usage示例程序
+add_executable(basic_usage basic_usage.cc)
+
+target_link_libraries(basic_usage PRIVATE kvstore)

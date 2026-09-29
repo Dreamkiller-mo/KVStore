@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../../common/types.h"     //key value sequence
 #include "encoder.h"
 #include "wal_record.h"
 #include <concepts>
@@ -23,7 +22,7 @@ class WALCodec
 {
 public:
     // WALRecord ---> bytes
-    void Encode(const WALRecord& record, std::vector<std::uint8_t>& buffer) const;
+    [[nodiscard]] bool Encode(const WALRecord& record, std::vector<std::uint8_t>& buffer) const;
     
     // bytes ---> WALRecord
     [[nodiscard]] WALRecord Decode(std::span<const uint8_t>);

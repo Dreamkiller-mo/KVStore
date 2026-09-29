@@ -1,9 +1,8 @@
 #pragma once
 
-#include "../../common/status.h"
-#include "../../common/types.h"
-#include "wal_codec.h"
-#include <memory>
+#include <kvstore/common/status.h>
+#include <kvstore/common/types.h>
+#include <kvstore//core/wal/wal_codec.h>
 
 namespace kvstore::core::wal 
 {
@@ -11,10 +10,21 @@ namespace kvstore::core::wal
 class WALManager
 {
 public:
-    Status AppendPut(const Key& key, const Value& value);
+    [[nodiscard]] Status AppendPut(std::span<const uint8_t> key,std::span<const uint8_t> value);
+
+    // [[nodiscard]] Status AppendDelete(std::span<const uint8_t> key);
+
+    [[nodiscard]] Status Flush();
 
 private:
-    std::unique_ptr<WALCodec> codec_;
+    WALCodec codec_;
+
+    std::vector<uint8_t> buffer_;
+
+    uint64_t sequence_ = 0;
+
+    // 后面再加
+    // File file_;
 };
 
 }   //namespace kvstore::core::wal

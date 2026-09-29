@@ -1,23 +1,27 @@
 #pragma once
 
-#include "../common/status.h"
-#include "../common/types.h"
+#include <kvstore/common/types.h>
+#include <kvstore/core/wal/wal_manager.h>
+
+namespace kvstore 
+{
+    class Status;
+}
 
 namespace kvstore::api
 {
 
-class kvstore
+class KVstore
 {
 public:
-    Status Put(Key key , Value value);
+    [[nodiscard]] Status Put(Key key , Value value);
 
-    Status Get(Key key);
+    // [[nodiscard]] Status Get(Key key) const;
 
-    Status Delete(Key key);
+    // [[nodiscard]] Status Delete(Key key);
 
 private:
-
-
+    std::unique_ptr<core::wal::WALManager> wal_;
 };
 
 } // namespace kvstore

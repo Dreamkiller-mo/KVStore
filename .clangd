@@ -1,8 +1,2 @@
-# clangd project config
-# CMake presets write the compilation database to build/<preset>/,
-# but clangd only searches each ancestor dir for compile_commands.json
-# (plus a build/ subdir at each level), so it never enters build/release/.
-# The root-level compile_commands.json symlink (already listed in .gitignore)
-# makes it discoverable; this file just pins the language level as a safety net.
 CompileFlags:
   Add: [-std=c++20]
