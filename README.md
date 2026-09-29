@@ -447,7 +447,7 @@ The exact directory layout may evolve as the implementation develops.
 
 ## Requirements
 
-* C++17 or later
+* C++20 or later
 * CMake
 * GCC / Clang
 * Linux recommended
