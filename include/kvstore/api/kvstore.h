@@ -11,9 +11,11 @@ namespace kvstore
 namespace kvstore::api
 {
 
-class KVstore
+class KVStore
 {
 public:
+    KVStore(core::wal::WALManager wal);
+    
     [[nodiscard]] Status Put(Key key , Value value);
 
     // [[nodiscard]] Status Get(Key key) const;
@@ -21,7 +23,7 @@ public:
     // [[nodiscard]] Status Delete(Key key);
 
 private:
-    std::unique_ptr<core::wal::WALManager> wal_;
+    core::wal::WALManager wal_;
 };
 
 } // namespace kvstore

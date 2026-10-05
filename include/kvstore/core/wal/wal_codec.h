@@ -22,7 +22,7 @@ class WALCodec
 {
 public:
     // WALRecord ---> bytes
-    [[nodiscard]] bool Encode(const WALRecord& record, std::vector<std::uint8_t>& buffer) const;
+    void Encode(const WALRecord& record, std::vector<std::uint8_t>& buffer) const;
     
     // bytes ---> WALRecord
     [[nodiscard]] WALRecord Decode(std::span<const uint8_t>);

@@ -2,6 +2,6 @@
 
 int main()
 {
-    kvstore::api::KVstore kv;
+    kvstore::api::KVStore kv;
     return 0;
 }

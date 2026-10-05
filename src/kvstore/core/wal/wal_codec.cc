@@ -28,7 +28,7 @@ using namespace kvstore::core::wal;
 
 */
 
-bool WALCodec::Encode(const WALRecord& record, std::vector<std::uint8_t>& buffer) const
+void WALCodec::Encode(const WALRecord& record, std::vector<std::uint8_t>& buffer) const
 {
     const auto start = buffer.size();
     // inite Encoder
@@ -56,8 +56,8 @@ bool WALCodec::Encode(const WALRecord& record, std::vector<std::uint8_t>& buffer
     {
         // rollback
         buffer.resize(start);
-        return false;
     }
+
     // Length of payload
     const auto payload_end = encoder.Size();
     const auto payload_len = static_cast<uint64_t>(payload_end - payload_begin);
@@ -72,7 +72,6 @@ bool WALCodec::Encode(const WALRecord& record, std::vector<std::uint8_t>& buffer
 
     // backfill Total Length
     encoder.PutUint64At(length_pos, total_length);
-
-    return true;
+    
 }
 
