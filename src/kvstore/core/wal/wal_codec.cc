@@ -2,6 +2,7 @@
 #include <kvstore/core/wal/encoder.h>
 #include <kvstore/core/wal/wal_record.h>
 #include <kvstore/core/wal/crc32c.h>
+#include <spdlog/spdlog.h>
 
 using namespace kvstore::core::wal;
 
@@ -49,7 +50,6 @@ void WALCodec::Encode(const WALRecord& record, std::vector<std::uint8_t>& buffer
     operation.Visit([&]<EncodeType T>(const T& type)
     {
         success = type.Encode(encoder);
-        // res ? 
     });
 
     if(!success)
@@ -73,5 +73,6 @@ void WALCodec::Encode(const WALRecord& record, std::vector<std::uint8_t>& buffer
     // backfill Total Length
     encoder.PutUint64At(length_pos, total_length);
     
+    spdlog::info("WAL Encode sequence={} bytes={}",record.sequnce(),buffer.size());
 }
 

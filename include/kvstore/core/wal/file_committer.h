@@ -1,6 +1,5 @@
 #include <kvstore/core/wal/committer.h>
 #include <kvstore/storage/file.h>
-#include <filesystem>
 
 namespace kvstore::core::wal 
 {
@@ -12,7 +11,7 @@ public:
 
     [[nodiscard]] Status Commit(std::span<const std::uint8_t> data) override;
 
-    ~FileCommitter();
+    ~FileCommitter() override = default;
     
 private:
     kvstore::storage::File file_;

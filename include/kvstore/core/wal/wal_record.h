@@ -91,7 +91,7 @@ private:
 class WALRecord
 {
 public:
-    WALRecord(Sequence sequence, Operation operation);
+    WALRecord(Sequence sequence, Operation operation) :sequence_(sequence), operation_(std::move(operation)) {}
 
     [[nodiscard]] kvstore::Sequence sequnce() const { return sequence_; }
 

@@ -2,6 +2,7 @@
 
 #include <kvstore/common/types.h>
 #include <kvstore/core/wal/wal_manager.h>
+#include <string_view>
 
 namespace kvstore 
 {
@@ -16,7 +17,7 @@ class KVStore
 public:
     KVStore(core::wal::WALManager wal);
     
-    [[nodiscard]] Status Put(Key key , Value value);
+    [[nodiscard]] Status Put(std::string_view key , std::string_view value);
 
     // [[nodiscard]] Status Get(Key key) const;
 

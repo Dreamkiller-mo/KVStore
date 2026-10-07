@@ -9,7 +9,7 @@ if [[ -z "$PRESET" ]]; then
     exit 1
 fi
 
-cmake --preset "$PRESET"
+cmake --preset "$PRESET" --fresh
 
 ln -sfn "build/$PRESET/compile_commands.json" compile_commands.json
 

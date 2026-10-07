@@ -1,3 +1,4 @@
+# src/kvstore/core/wal/CMakeLists.txt
 include(FetchContent)
 
 FetchContent_Declare(
@@ -26,7 +27,8 @@ target_include_directories(wal
 )
 
 target_link_libraries(wal
-    PUBLIC
+    PRIVATE
         absl::crc32c
         absl::strings
+        spdlog::spdlog
 )  

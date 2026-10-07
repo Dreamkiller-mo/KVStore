@@ -1,8 +1,9 @@
-# src/kvstore
+# src/kvstore/CMakeLists.txt
 
 add_library(kvstore STATIC
     api/kvstore.cc
     storage/file.cc
+    composition/composition_root.cc
 )
 
 target_include_directories(kvstore

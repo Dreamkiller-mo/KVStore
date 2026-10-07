@@ -10,20 +10,11 @@ namespace kvstore
 enum class StatusCode : uint8_t 
 {
     Ok,
-
-    // 业务/查询
     NotFound,
-
-    // 底层 I/O
     IOError,
-
-    // 数据损坏
     Corruption,
-
-    // 对象状态错误
+    InvalidArgument,
     InvalidState,
-
-    // 配置问题
     InvalidConfig
 };
 
