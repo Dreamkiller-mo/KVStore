@@ -20,6 +20,8 @@ kvstore::Status KVStore::Put(std::string_view key , std::string_view value)
     Value value_bytes(reinterpret_cast<const uint8_t*>(value.data()), reinterpret_cast<const uint8_t*>(value.data()) + value.size());
 
     auto res = wal_.AppendPut(key_bytes, value_bytes);
+    if(!res) return res.error();
+    auto sequence = *res;
 
-    return res;
+    
 }

@@ -3,7 +3,6 @@
 #include "../../common/types.h"
 #include "encoder.h"
 #include <concepts>
-#include <cstdint>
 #include <type_traits>
 #include <utility>
 #include <variant>
@@ -12,12 +11,8 @@ namespace kvstore::core::wal
 {
 
 class Operation;
-// operation type
-enum class WALRecordType : std::uint8_t
-{
-    PUT,
-    DELETE
-};
+
+using WALRecordType = kvstore::RecordType;
 
 struct PutWALRecord
 {

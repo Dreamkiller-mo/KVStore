@@ -1,19 +1,8 @@
-set(TEST_SOURCES 
-    v0_benchmark.cc
+add_executable(skiplist_test
+    unit/core/memtable/skiplist_test.cpp
 )
 
-find_package(benchmark REQUIRED)
+target_link_libraries(skiplist_test PRIVATE kvstore)
+target_compile_features(skiplist_test PRIVATE cxx_std_20)
 
-add_executable(agent_kv_test ${TEST_SOURCES} )
-
-target_link_libraries(
-    agent_kv_test PRIVATE 
-    agent_kv_lib
-    AgentKV::warnings
-    benchmark::benchmark
-    benchmark::benchmark_main
-)
-
-add_test(NAME AgentKVTest COMMAND agent_kv_test)
-
-target_compile_features(agent_kv_lib PUBLIC cxx_std_20)
+add_test(NAME skiplist_test COMMAND skiplist_test)

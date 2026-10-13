@@ -6,6 +6,8 @@ project(KVStore
     LANGUAGES CXX
 )
 
+include(CTest)
+
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -26,5 +28,8 @@ FetchContent_MakeAvailable(spdlog)
 # recurse into subdirectories
 add_subdirectory(src)
 
-# add_subdirectory(tests)
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
+
 add_subdirectory(examples)

@@ -15,7 +15,8 @@ enum class StatusCode : uint8_t
     Corruption,
     InvalidArgument,
     InvalidState,
-    InvalidConfig
+    InvalidConfig,
+    ResourceExhausted
 };
 
 class Status 
@@ -28,6 +29,9 @@ public:
     [[nodiscard]] constexpr bool is_not_found() const noexcept { return code_ == StatusCode::NotFound; }
 
     [[nodiscard]] constexpr const std::string& Error() const noexcept { return error_; }
+
+    [[nodiscard]] constexpr StatusCode Code() const noexcept { return code_; }
+
 private:
     StatusCode code_;
 
