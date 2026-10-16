@@ -37,7 +37,7 @@ public:
 
     class ConstIterator;
 
-    class Iterator
+    class Iterator : public std::iterator<std::forward_iterator_tag, Entry>
     {
         friend class SkipList;
         friend class ConstIterator;
@@ -45,12 +45,13 @@ public:
         explicit Iterator(Node* node);
 
     public:
-        using iterator_category = std::forward_iterator_tag;
-        using iterator_concept = std::forward_iterator_tag;
-        using difference_type = std::ptrdiff_t;
-        using value_type = Entry;
-        using reference = Entry&;
-        using pointer = Entry*;
+        using iterator_base = std::iterator<std::forward_iterator_tag, Entry>;
+        using iterator_category = iterator_base::iterator_category;
+        using iterator_concept = iterator_base::iterator_concept;
+        using difference_type = iterator_base::difference_type;
+        using value_type = iterator_base::value_type;
+        using reference = iterator_base::reference;
+        using pointer = iterator_base::pointer;
 
         Iterator() = default;
 
