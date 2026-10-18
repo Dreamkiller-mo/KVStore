@@ -3,7 +3,7 @@ include(FetchContent)
 
 FetchContent_Declare(
     absl
-    GIT_REPOSITORY git@github.com:abseil/abseil-cpp.git
+    GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
     GIT_TAG 20260817.0
 )
 FetchContent_MakeAvailable(absl)

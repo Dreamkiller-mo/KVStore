@@ -803,6 +803,32 @@ The project intends to use:
 
 Optimization decisions should be supported by measurements rather than assumptions.
 
+### CPU flame graph
+
+On Linux, build the benchmark target and run the profiling script from any
+directory:
+
+```bash
+cmake --build --preset benchmark
+./scripts/profile.sh
+```
+
+The script records the default `BM_Get/65536$` benchmark at 99 Hz for up to
+10 seconds. You can provide a Google Benchmark filter, sampling frequency, and
+time limit:
+
+```bash
+./scripts/profile.sh 'BM_Put' 99 10
+```
+
+Set `BENCH`, `OUT_DIR`, or `FLAMEGRAPH_DIR` to override the executable or output
+locations. The script creates `perf.data`, `report.txt`, and `flamegraph.svg`
+under `perf-out/`. It uses the local `thirdparty/FlameGraph/` scripts, cloning
+them from the upstream repository into `thirdparty/` if they are missing. If `perf`
+reports a permission error, adjust the host's `perf_event_paranoid` setting or
+perf capabilities according to your system policy; the script does not change
+system-wide settings.
+
 ---
 
 # 🎯 Design Principles

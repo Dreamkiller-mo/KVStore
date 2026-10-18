@@ -1,10 +1,10 @@
 #include <benchmark/benchmark.h>
+#include <spdlog/spdlog.h>
 
 #include <kvstore/api/kvstore.h>
 #include <kvstore/common/status.h>
 #include <kvstore/composition/composition_root.h>
 #include <kvstore/composition/config.h>
-#include <spdlog/spdlog.h>
 
 #include <chrono>
 #include <filesystem>
@@ -20,6 +20,7 @@ class TemporaryDataDirectory
 public:
     TemporaryDataDirectory()
     {
+        // get current operating system temp directory and append a unique name to it
         const auto timestamp = std::chrono::steady_clock::now().time_since_epoch().count();
         path_ = std::filesystem::temp_directory_path() /
             ("kvstore-benchmark-" + std::to_string(timestamp));
@@ -41,9 +42,13 @@ private:
 };
 
 void BM_Get(benchmark::State& state)
-{
+{   
+    // close the spdlog logger to avoid logging during the benchmark
     spdlog::set_level(spdlog::level::off);
+
+    // get the number of keys to use for the benchmark from the state
     const auto num_keys = static_cast<std::size_t>(state.range(0));
+    
     TemporaryDataDirectory data_dir;
     kvstore::composition::Composition composition;
     auto result = composition.Create(kvstore::Config{.data_dir = data_dir.Path()});
@@ -102,10 +107,57 @@ void BM_Get(benchmark::State& state)
         benchmark::Counter(static_cast<double>(state.iterations()), benchmark::Counter::kIsRate);
 }
 
+void BM_Put(benchmark::State& state)
+{
+    // close the spdlog logger to avoid logging during the benchmark
+    spdlog::set_level(spdlog::level::off);
+
+    // get the number of keys to use for the benchmark from the state
+    const auto num_keys = static_cast<std::size_t>(state.range(0));
+    
+    TemporaryDataDirectory data_dir;
+    kvstore::composition::Composition composition;
+    auto result = composition.Create(kvstore::Config{.data_dir = data_dir.Path()});
+    if (!result)
+    {
+        const auto error = result.error().Error();
+        state.SkipWithError(error.c_str());
+        return;
+    }
+
+    auto& kv = *result;
+
+    for (auto _ : state)
+    {
+        for (std::size_t index = 0; index < num_keys; ++index)
+        {
+            const std::string key = "benchmark-key-" + std::to_string(index);
+            const std::string value = "benchmark-value-" + std::to_string(index);
+
+            const auto put_status = kv.Put(key, value);
+            if (!put_status.ok())
+            {
+                const auto error = put_status.Error();
+                state.SkipWithError(error.c_str());
+                return;
+            }
+        }
+    }
+
+    state.SetItemsProcessed(state.iterations() * num_keys);
+    state.counters["DatasetSize"] = static_cast<double>(num_keys);
+    state.counters["QPS"] =
+        benchmark::Counter(static_cast<double>(state.iterations() * num_keys), benchmark::Counter::kIsRate);
+}
+
 BENCHMARK(BM_Get)
     ->Arg(1024)
     ->Arg(2048)
     ->Arg(4096)
     ->Unit(benchmark::kMicrosecond);
-
+BENCHMARK(BM_Put)
+    ->Arg(1024)
+    ->Arg(2048)
+    ->Arg(4096)
+    ->Unit(benchmark::kMicrosecond);
 } // namespace
