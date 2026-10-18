@@ -8,3 +8,7 @@ target_link_libraries(basic_usage
         kvstore
         spdlog::spdlog
 )
+
+if(BUILD_TESTING)
+    add_test(NAME basic_usage COMMAND basic_usage)
+endif()
