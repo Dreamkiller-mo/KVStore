@@ -1,6 +1,7 @@
 #include "kvstore/common/status.h"
 #include "kvstore/common/types.h"
 #include "kvstore/core/wal/committer.h"
+#include <expected>
 #include <kvstore/core/wal/wal_manager.h>
 #include <kvstore/core/wal/wal_record.h>
 #include <spdlog/spdlog.h>
@@ -11,10 +12,10 @@ WALManager::WALManager(std::unique_ptr<ICommitter> committer)
     : committer_(std::move(committer))
     {}
 
-kvstore::Status WALManager::AppendPut(std::span<const uint8_t> key, std::span<const uint8_t> value)
+std::expected<kvstore::Sequence, kvstore::Status> WALManager::AppendPut(std::span<const uint8_t> key, std::span<const uint8_t> value)
 {    
     // check WALManager Status
-    if (failed_) { spdlog::error("WALManager is in failed status"); return Status{StatusCode::InvalidState, "WALManager is in failed status"}; }
+    if (failed_) { spdlog::error("WALManager is in failed status"); return std::unexpected<Status>(Status{StatusCode::InvalidState, "WALManager is in failed status"}); }
 
     spdlog::info("WAL AppendPut key_size={} value_size={}",key.size(),value.size());
 
@@ -34,8 +35,9 @@ kvstore::Status WALManager::AppendPut(std::span<const uint8_t> key, std::span<co
 
     // save up record and flush
     auto status = committer_->Commit(buffer_);
-    if(!status.ok()) { failed_ = true; return status; }
+    if(!status.ok()) { failed_ = true; return std::unexpected<Status>(status); }
+
     sequence_ = next_sequence;
 
-    return status;
+    return sequence_;
 }

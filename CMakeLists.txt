@@ -6,11 +6,16 @@ project(KVStore
     LANGUAGES CXX
 )
 
+include(CTest)
+option(KVSTORE_BUILD_BENCHMARKS "Build kvstore benchmarks" OFF)
+option(KVSTORE_BUILD_Function_TEST "Build kvstore function test" ON)
+    
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Bring in external dependencies
 include(FetchContent)
 
 # Project-wide dependencies
@@ -22,9 +27,13 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(spdlog)
 
-FetchContent_MakeAvailable(spdlog)
 # recurse into subdirectories
 add_subdirectory(src)
 
-# add_subdirectory(tests)
-add_subdirectory(examples)
+if(KVSTORE_BUILD_Function_TEST)
+    add_subdirectory(examples)
+endif()
+
+if(KVSTORE_BUILD_BENCHMARKS)
+    add_subdirectory(benchmark)
+endif()

@@ -18,6 +18,7 @@
                 "CMAKE_EXPORT_COMPILE_COMMANDS" : "ON"
             }
         },
+
         {
             "name" : "debug",
             "displayName": "Debug 开发版本(Ninja + compile_commands)",
@@ -28,6 +29,7 @@
                 "CMAKE_BUILD_TYPE" : "Debug"
             }
         },
+
         {
             "name": "release",
             "displayName": "Release 发布版本(Ninja + compile_commands)",
@@ -38,6 +40,19 @@
                 "CMAKE_BUILD_TYPE" : "Release"
             }
         },
+        
+        {
+            "name": "benchmark",
+            "displayName": "Benchmark 性能测试版本",
+            "description": "Release 优化构建，并启用 KVStore Benchmark",
+            "inherits": "base",
+            "cacheVariables": 
+            {
+                "CMAKE_BUILD_TYPE": "Release",
+                "KVSTORE_BUILD_BENCHMARKS": "ON"
+            }
+        },
+
         {
             "name": "relwithdebinfo",
             "displayName": "RelWithDebInfo 性能分析版本(-O2 + 调试符号)",
@@ -48,6 +63,7 @@
                 "CMAKE_BUILD_TYPE" : "RelWithDebInfo"
             }
         },
+
         {
             "name": "asan",
             "displayName": "ASan + UBSan 正确性检查版本",
@@ -66,8 +82,9 @@
         {
             "name" : "jobs",
             "hidden": true,
-            "jobs": 8
+            "jobs": 0
         },
+
         {
             "name" : "debug",
             "inherits" : "jobs",
@@ -78,22 +95,33 @@
             "inherits" : "jobs",
             "configurePreset": "release"
         },
+        
+        {
+            "name": "benchmark",
+            "displayName": "构建 Benchmark",
+            "inherits": "jobs",
+            "configurePreset": "benchmark"
+        },
+
         {
             "name": "relwithdebinfo",
             "inherits" : "jobs",
             "configurePreset": "relwithdebinfo"
         },
+
         {
             "name": "asan",
             "inherits" : "jobs",
             "configurePreset": "asan"
         },
+
         {
             "name": "clean-debug",
             "displayName": "清理 Debug",
             "configurePreset": "debug",
             "targets": ["clean"]
         },
+
         {
             "name": "clean-release",
             "displayName": "清理 Release",

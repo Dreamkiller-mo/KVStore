@@ -1,5 +1,6 @@
 #pragma once
 
+#include <expected>
 #include <kvstore/core/wal/committer.h>
 #include <kvstore/common/status.h>
 #include <kvstore/common/types.h>
@@ -15,7 +16,7 @@ class WALManager
 public:
     explicit WALManager(std::unique_ptr<ICommitter> committer);
 
-    [[nodiscard]] Status AppendPut(std::span<const uint8_t> key,std::span<const uint8_t> value);
+    [[nodiscard]] std::expected<Sequence, Status> AppendPut(std::span<const uint8_t> key,std::span<const uint8_t> value);
 
     // [[nodiscard]] Status AppendDelete(std::span<const uint8_t> key);
 
@@ -25,7 +26,7 @@ private:
 
     std::vector<uint8_t> buffer_;
 
-    uint64_t sequence_ = 0;
+    Sequence sequence_ = 0;
 
     // committer
     std::unique_ptr<ICommitter> committer_;
