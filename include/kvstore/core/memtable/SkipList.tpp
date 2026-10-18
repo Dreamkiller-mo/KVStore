@@ -9,130 +9,139 @@
 namespace kvstore::core::memtable
 {
 
-template <typename T>
-SkipList<T>::Node::Node(std::size_t level) : forward(level, nullptr)
-{
-}
+template <typename Key, typename Value>
+SkipList<Key, Value>::Node::Node(std::size_t level) : forward(level, nullptr)
+{}
 
-template <typename T>
+template <typename Key, typename Value>
 template <typename K, typename... Args>
-SkipList<T>::Node::Node(std::size_t level, K&& key, Args&&... value_args)
+SkipList<Key, Value>::Node::Node(std::size_t level, K&& key, Args&&... value_args)
+    // Use std::piecewise_construct to construct the entry in place
     : entry(std::in_place,
             std::piecewise_construct,
             std::forward_as_tuple(std::forward<K>(key)),
             std::forward_as_tuple(std::forward<Args>(value_args)...)),
       forward(level, nullptr)
+{}
+
+template <typename Key, typename Value>
+SkipList<Key, Value>::Iterator::Iterator(Node* node) : node_(node)
+{}
+
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::Iterator::reference SkipList<Key, Value>::Iterator::operator*() const
 {
+    return *(node_->entry); // *optional<Entry> to Entry&
 }
 
-template <typename T>
-SkipList<T>::Iterator::Iterator(Node* node) : node_(node)
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::Iterator::pointer SkipList<Key, Value>::Iterator::operator->() const
 {
+    return &*(node_->entry);
 }
 
-template <typename T>
-typename SkipList<T>::Iterator::reference SkipList<T>::Iterator::operator*() const
-{
-    return *node_->entry;
-}
-
-template <typename T>
-typename SkipList<T>::Iterator::pointer SkipList<T>::Iterator::operator->() const
-{
-    return &*node_->entry;
-}
-
-template <typename T>
-typename SkipList<T>::Iterator& SkipList<T>::Iterator::operator++()
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::Iterator& SkipList<Key, Value>::Iterator::operator++()
 {
     node_ = node_->forward[0];
     return *this;
 }
 
-template <typename T>
-typename SkipList<T>::Iterator SkipList<T>::Iterator::operator++(int)
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::Iterator SkipList<Key, Value>::Iterator::operator++(int)
 {
     Iterator current = *this;
     ++(*this);
     return current;
 }
 
-template <typename T>
-bool SkipList<T>::Iterator::operator==(const Iterator& other) const
+template <typename Key, typename Value>
+bool SkipList<Key, Value>::Iterator::operator==(const Iterator& other) const
 {
     return node_ == other.node_;
 }
 
-template <typename T>
-bool SkipList<T>::Iterator::operator==(const ConstIterator& other) const
+template <typename Key, typename Value>
+bool SkipList<Key, Value>::Iterator::operator==(const ConstIterator& other) const
 {
     return node_ == other.node_;
 }
 
-template <typename T>
-SkipList<T>::ConstIterator::ConstIterator(Node* node) : node_(node)
+template <typename Key, typename Value>
+SkipList<Key, Value>::ConstIterator::ConstIterator(Node* node) : node_(node)
+{}
+
+template <typename Key, typename Value>
+SkipList<Key, Value>::ConstIterator::ConstIterator(const Iterator& other) : node_(other.node_)
+{}
+
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::ConstIterator::reference SkipList<Key, Value>::ConstIterator::operator*() const
 {
+    return *(node_->entry);
 }
 
-template <typename T>
-SkipList<T>::ConstIterator::ConstIterator(const Iterator& other) : node_(other.node_)
-{
-}
-
-template <typename T>
-typename SkipList<T>::ConstIterator::reference SkipList<T>::ConstIterator::operator*() const
-{
-    return *node_->entry;
-}
-
-template <typename T>
-typename SkipList<T>::ConstIterator::pointer SkipList<T>::ConstIterator::operator->() const
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::ConstIterator::pointer SkipList<Key, Value>::ConstIterator::operator->() const
 {
     return &*node_->entry;
 }
 
-template <typename T>
-typename SkipList<T>::ConstIterator& SkipList<T>::ConstIterator::operator++()
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::ConstIterator& SkipList<Key, Value>::ConstIterator::operator++()
 {
     node_ = node_->forward[0];
     return *this;
 }
 
-template <typename T>
-typename SkipList<T>::ConstIterator SkipList<T>::ConstIterator::operator++(int)
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::ConstIterator SkipList<Key, Value>::ConstIterator::operator++(int)
 {
     ConstIterator current = *this;
     ++(*this);
     return current;
 }
 
-template <typename T>
-bool SkipList<T>::ConstIterator::operator==(const ConstIterator& other) const
+template <typename Key, typename Value>
+bool SkipList<Key, Value>::ConstIterator::operator==(const ConstIterator& other) const
 {
     return node_ == other.node_;
 }
 
-template <typename T>
-bool SkipList<T>::ConstIterator::operator==(const Iterator& other) const
+template <typename Key, typename Value>
+bool SkipList<Key, Value>::ConstIterator::operator==(const Iterator& other) const
 {
     return node_ == other.node_;
 }
 
-template <typename T>
-SkipList<T>::SkipList() : head_(new Node(kMaxLevel))
-{
-}
+template <typename Key, typename Value>
+SkipList<Key, Value>::SkipList() : head_(new Node(kMaxLevel))
+{}
 
-template <typename T>
-SkipList<T>::SkipList(SkipList&& other) noexcept
+template <typename Key, typename Value>
+SkipList<Key, Value>::SkipList(SkipList&& other) noexcept
+    // equal
+    /*
+        SkipList<Key, Value>::SkipList(SkipList&& other) noexcept
+        : head_(other.head_),
+        size_(other.size_),
+        max_height_(other.max_height_)
+        {
+            other.head_ = nullptr;
+            other.size_ = 0;
+            other.max_height_ = 1;
+        }
+    */
+
+    // std::exchange : 1.  get old value 2. assign new value 3. return old value
+
     : head_(std::exchange(other.head_, nullptr)),
       size_(std::exchange(other.size_, 0)),
       max_height_(std::exchange(other.max_height_, 1))
-{
-}
+{}
 
-template <typename T>
-SkipList<T>& SkipList<T>::operator=(SkipList&& other) noexcept
+template <typename Key, typename Value>
+SkipList<Key, Value>& SkipList<Key, Value>::operator=(SkipList&& other) noexcept
 {
     if (this != &other)
     {
@@ -144,67 +153,64 @@ SkipList<T>& SkipList<T>::operator=(SkipList&& other) noexcept
     return *this;
 }
 
-template <typename T>
-SkipList<T>::~SkipList()
+template <typename Key, typename Value>
+SkipList<Key, Value>::~SkipList()
 {
     ClearNodes();
 }
 
-template <typename T>
-bool SkipList<T>::empty() const noexcept
+template <typename Key, typename Value>
+bool SkipList<Key, Value>::empty() const noexcept
 {
     return size_ == 0;
 }
 
-template <typename T>
-typename SkipList<T>::size_type SkipList<T>::size() const noexcept
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::size_type SkipList<Key, Value>::size() const noexcept
 {
     return size_;
 }
 
-template <typename T>
-typename SkipList<T>::iterator SkipList<T>::begin() noexcept
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::iterator SkipList<Key, Value>::begin() noexcept
 {
     return iterator(head_ == nullptr ? nullptr : head_->forward[0]);
 }
 
-template <typename T>
-typename SkipList<T>::const_iterator SkipList<T>::begin() const noexcept
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::const_iterator SkipList<Key, Value>::begin() const noexcept
 {
     return cbegin();
 }
 
-template <typename T>
-typename SkipList<T>::const_iterator SkipList<T>::cbegin() const noexcept
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::const_iterator SkipList<Key, Value>::cbegin() const noexcept
 {
     return const_iterator(head_ == nullptr ? nullptr : head_->forward[0]);
 }
 
-template <typename T>
-typename SkipList<T>::iterator SkipList<T>::end() noexcept
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::iterator SkipList<Key, Value>::end() noexcept
 {
     return iterator(nullptr);
 }
 
-template <typename T>
-typename SkipList<T>::const_iterator SkipList<T>::end() const noexcept
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::const_iterator SkipList<Key, Value>::end() const noexcept
 {
     return const_iterator(nullptr);
 }
 
-template <typename T>
-typename SkipList<T>::const_iterator SkipList<T>::cend() const noexcept
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::const_iterator SkipList<Key, Value>::cend() const noexcept
 {
     return const_iterator(nullptr);
 }
 
-template <typename T>
-void SkipList<T>::clear() noexcept
+template <typename Key, typename Value>
+void SkipList<Key, Value>::clear() noexcept
 {
-    if (head_ == nullptr)
-    {
-        return;
-    }
+    if (head_ == nullptr) { return; }
 
     Node* current = head_->forward[0];
     while (current != nullptr)
@@ -214,60 +220,55 @@ void SkipList<T>::clear() noexcept
         current = next;
     }
 
+    // clear head_ forward pointers and reset size and max_height
     std::fill(head_->forward.begin(), head_->forward.end(), nullptr);
     size_ = 0;
     max_height_ = 1;
 }
 
-template <typename T>
-std::pair<typename SkipList<T>::iterator, bool> SkipList<T>::insert(const value_type& entry)
+template <typename Key, typename Value>
+std::pair<typename SkipList<Key, Value>::iterator, bool> SkipList<Key, Value>::insert(const value_type& entry)
 {
     return EmplaceUnique(entry.first, entry.second);
 }
 
-template <typename T>
-std::pair<typename SkipList<T>::iterator, bool> SkipList<T>::insert(value_type&& entry)
+template <typename Key, typename Value>
+std::pair<typename SkipList<Key, Value>::iterator, bool> SkipList<Key, Value>::insert(value_type&& entry)
 {
     return EmplaceUnique(entry.first, std::move(entry.second));
 }
 
-template <typename T>
+template <typename Key, typename Value>
 template <typename U>
-std::pair<typename SkipList<T>::iterator, bool> SkipList<T>::insert(const Key& key, U&& value)
+std::pair<typename SkipList<Key, Value>::iterator, bool> SkipList<Key, Value>::insert(const Key& key, U&& value)
 {
     return EmplaceUnique(key, std::forward<U>(value));
 }
 
-template <typename T>
+template <typename Key, typename Value>
 template <typename U>
-std::pair<typename SkipList<T>::iterator, bool> SkipList<T>::insert(Key&& key, U&& value)
+std::pair<typename SkipList<Key, Value>::iterator, bool> SkipList<Key, Value>::insert(Key&& key, U&& value)
 {
     return EmplaceUnique(std::move(key), std::forward<U>(value));
 }
 
-template <typename T>
+template <typename Key, typename Value>
 template <typename... Args>
-std::pair<typename SkipList<T>::iterator, bool> SkipList<T>::try_emplace(
-    const Key& key,
-    Args&&... args)
+std::pair<typename SkipList<Key, Value>::iterator, bool> SkipList<Key, Value>::try_emplace(const Key& key, Args&&... args)
 {
     return EmplaceUnique(key, std::forward<Args>(args)...);
 }
 
-template <typename T>
+template <typename Key, typename Value>
 template <typename... Args>
-std::pair<typename SkipList<T>::iterator, bool> SkipList<T>::try_emplace(
-    Key&& key,
-    Args&&... args)
+std::pair<typename SkipList<Key, Value>::iterator, bool> SkipList<Key, Value>::try_emplace(Key&& key, Args&&... args)
 {
     return EmplaceUnique(std::move(key), std::forward<Args>(args)...);
 }
 
-template <typename T>
+template <typename Key, typename Value>
 template <typename U>
-std::pair<typename SkipList<T>::iterator, bool> SkipList<T>::insert_or_assign(
-    const Key& key,
-    U&& value)
+std::pair<typename SkipList<Key, Value>::iterator, bool> SkipList<Key, Value>::insert_or_assign(const Key& key, U&& value)
 {
     Node* node = FindNode(key);
     if (node != nullptr)
@@ -275,14 +276,13 @@ std::pair<typename SkipList<T>::iterator, bool> SkipList<T>::insert_or_assign(
         node->entry->second = std::forward<U>(value);
         return {iterator(node), false};
     }
+
     return EmplaceUnique(key, std::forward<U>(value));
 }
 
-template <typename T>
+template <typename Key, typename Value>
 template <typename U>
-std::pair<typename SkipList<T>::iterator, bool> SkipList<T>::insert_or_assign(
-    Key&& key,
-    U&& value)
+std::pair<typename SkipList<Key, Value>::iterator, bool> SkipList<Key, Value>::insert_or_assign(Key&& key, U&& value)
 {
     Node* node = FindNode(key);
     if (node != nullptr)
@@ -293,52 +293,55 @@ std::pair<typename SkipList<T>::iterator, bool> SkipList<T>::insert_or_assign(
     return EmplaceUnique(std::move(key), std::forward<U>(value));
 }
 
-template <typename T>
-typename SkipList<T>::iterator SkipList<T>::find(const Key& key)
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::iterator SkipList<Key, Value>::find(const Key& key)
 {
     return iterator(FindNode(key));
 }
 
-template <typename T>
-typename SkipList<T>::const_iterator SkipList<T>::find(const Key& key) const
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::const_iterator SkipList<Key, Value>::find(const Key& key) const
 {
     return const_iterator(FindNode(key));
 }
 
-template <typename T>
-bool SkipList<T>::contains(const Key& key) const
+template <typename Key, typename Value>
+bool SkipList<Key, Value>::contains(const Key& key) const
 {
     return FindNode(key) != nullptr;
 }
 
-template <typename T>
-typename SkipList<T>::iterator SkipList<T>::lower_bound(const Key& key)
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::iterator SkipList<Key, Value>::lower_bound(const Key& key)
 {
     return iterator(LowerBoundNode(key));
 }
 
-template <typename T>
-typename SkipList<T>::const_iterator SkipList<T>::lower_bound(const Key& key) const
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::const_iterator SkipList<Key, Value>::lower_bound(const Key& key) const
 {
     return const_iterator(LowerBoundNode(key));
 }
 
-template <typename T>
+template <typename Key, typename Value>
 template <typename K, typename... Args>
-std::pair<typename SkipList<T>::iterator, bool> SkipList<T>::EmplaceUnique(
-    K&& key,
-    Args&&... value_args)
+std::pair<typename SkipList<Key, Value>::iterator, bool> SkipList<Key, Value>::EmplaceUnique(K&& key, Args&&... value_args)
 {
     EnsureInitialized();
 
     std::array<Node*, kMaxLevel> predecessors{};
+
+    // get the next node that is greater than or equal to the key and fill the predecessors array
     Node* next = FindGreaterOrEqual(key, &predecessors);
+
     if (next != nullptr && Equivalent(next->entry->first, key))
     {
         return {iterator(next), false};
     }
 
     const std::size_t level = RandomLevel();
+
+    // Starting from the current highest effective layer, fill the predecessors array with head_ for any levels that are not yet used
     for (std::size_t index = max_height_; index < level; ++index)
     {
         predecessors[index] = head_;
@@ -355,12 +358,13 @@ std::pair<typename SkipList<T>::iterator, bool> SkipList<T>::EmplaceUnique(
     {
         max_height_ = level;
     }
+
     ++size_;
     return {iterator(node), true};
 }
 
-template <typename T>
-void SkipList<T>::EnsureInitialized()
+template <typename Key, typename Value>
+void SkipList<Key, Value>::EnsureInitialized()
 {
     if (head_ == nullptr)
     {
@@ -368,35 +372,33 @@ void SkipList<T>::EnsureInitialized()
     }
 }
 
-template <typename T>
-bool SkipList<T>::Less(const Key& left, const Key& right)
+template <typename Key, typename Value>
+bool SkipList<Key, Value>::Less(const Key& left, const Key& right)
 {
-    return std::lexicographical_compare(left.begin(), left.end(), right.begin(), right.end());
+    return left < right;
 }
 
-template <typename T>
-bool SkipList<T>::Equivalent(const Key& left, const Key& right)
+template <typename Key, typename Value>
+bool SkipList<Key, Value>::Equivalent(const Key& left, const Key& right)
 {
     return !Less(left, right) && !Less(right, left);
 }
 
-template <typename T>
-typename SkipList<T>::Node* SkipList<T>::FindNode(const Key& key) const
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::Node* SkipList<Key, Value>::FindNode(const Key& key) const
 {
     Node* node = LowerBoundNode(key);
     return node != nullptr && Equivalent(node->entry->first, key) ? node : nullptr;
 }
 
-template <typename T>
-typename SkipList<T>::Node* SkipList<T>::LowerBoundNode(const Key& key) const
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::Node* SkipList<Key, Value>::LowerBoundNode(const Key& key) const
 {
     return FindGreaterOrEqual(key, nullptr);
 }
 
-template <typename T>
-typename SkipList<T>::Node* SkipList<T>::FindGreaterOrEqual(
-    const Key& key,
-    std::array<Node*, kMaxLevel>* predecessors) const
+template <typename Key, typename Value>
+typename SkipList<Key, Value>::Node* SkipList<Key, Value>::FindGreaterOrEqual(const Key& key, std::array<Node*, kMaxLevel>* predecessors) const
 {
     if (head_ == nullptr)
     {
@@ -404,23 +406,25 @@ typename SkipList<T>::Node* SkipList<T>::FindGreaterOrEqual(
     }
 
     Node* current = head_;
-    for (std::size_t level = max_height_; level-- > 0;)
+    for (std::size_t level = max_height_; level > 0; --level)
     {
-        while (current->forward[level] && Less(current->forward[level]->entry->first, key))
+        const std::size_t index = level - 1;
+        while (current->forward[index] && Less(current->forward[index]->entry->first, key))
         {
-            current = current->forward[level];
+            current = current->forward[index];
         }
+
         if (predecessors != nullptr)
         {
-            (*predecessors)[level] = current;
+            (*predecessors)[index] = current;
         }
     }
 
     return current->forward[0];
 }
 
-template <typename T>
-std::size_t SkipList<T>::RandomLevel()
+template <typename Key, typename Value>
+std::size_t SkipList<Key, Value>::RandomLevel()
 {
     thread_local std::mt19937 generator(std::random_device{}());
     thread_local std::bernoulli_distribution promote(0.25);
@@ -433,14 +437,12 @@ std::size_t SkipList<T>::RandomLevel()
     return level;
 }
 
-template <typename T>
-void SkipList<T>::ClearNodes() noexcept
+template <typename Key, typename Value>
+void SkipList<Key, Value>::ClearNodes() noexcept
 {
-    if (head_ == nullptr)
-    {
-        return;
-    }
+    if (head_ == nullptr){ return; }
 
+    // delete all nodes except head_ (set head_ forward pointers to nullptr)
     clear();
     delete head_;
     head_ = nullptr;

@@ -2,6 +2,9 @@
 
 #include <kvstore/common/types.h>
 #include <kvstore/core/wal/wal_manager.h>
+#include <kvstore/core/memtable/i_memtable.h>
+#include <kvstore/core/memtable/SkipList.h>
+#include <memory>
 #include <string_view>
 
 namespace kvstore 
@@ -19,12 +22,13 @@ public:
     
     [[nodiscard]] Status Put(std::string_view key , std::string_view value);
 
-    // [[nodiscard]] Status Get(Key key) const;
+    [[nodiscard]] Status Get(std::string_view key, std::string_view* value) const;
 
     // [[nodiscard]] Status Delete(Key key);
 
 private:
     core::wal::WALManager wal_;
+    std::unique_ptr<kvstore::core::memtable::IMemTable> memtable_;
 };
 
 } // namespace kvstore

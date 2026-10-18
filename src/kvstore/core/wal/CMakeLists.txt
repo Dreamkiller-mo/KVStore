@@ -27,8 +27,9 @@ target_include_directories(wal
 )
 
 target_link_libraries(wal
+    PUBLIC
+        spdlog::spdlog
     PRIVATE
         absl::crc32c
         absl::strings
-        spdlog::spdlog
 )  

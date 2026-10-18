@@ -11,49 +11,50 @@
 namespace kvstore::core::memtable
 {
 
-template <typename T>
+template <typename Key, typename Value = void>
 class SkipList
 {
 private:
     static constexpr std::size_t kMaxLevel = 16;
-    using Entry = std::pair<const Key, T>;      // const Key to prevent external modification of the key
+    using Entry = std::pair<const Key, Value>;      // const Key to prevent external modification of the key
 
     struct Node
     {
         std::optional<Entry> entry;
         std::vector<Node*> forward;
 
+        // head node constructor
         explicit Node(std::size_t level);
 
+        // regular node constructor
         template <typename K, typename... Args>
         Node(std::size_t level, K&& key, Args&&... value_args);
     };
 
 public:
     using key_type = Key;
-    using mapped_type = T;
+    using mapped_type = Value;
     using value_type = Entry;
     using size_type = std::size_t;
 
     class ConstIterator;
 
-    class Iterator : public std::iterator<std::forward_iterator_tag, Entry>
+    // Exclusive iterator
+    class Iterator
     {
         friend class SkipList;
         friend class ConstIterator;
 
-        explicit Iterator(Node* node);
-
     public:
-        using iterator_base = std::iterator<std::forward_iterator_tag, Entry>;
-        using iterator_category = iterator_base::iterator_category;
-        using iterator_concept = iterator_base::iterator_concept;
-        using difference_type = iterator_base::difference_type;
-        using value_type = iterator_base::value_type;
-        using reference = iterator_base::reference;
-        using pointer = iterator_base::pointer;
+        using iterator_category = std::forward_iterator_tag;
+        using iterator_concept = std::forward_iterator_tag;
+        using difference_type = std::ptrdiff_t;
+        using value_type = Entry;
+        using reference = Entry&;
+        using pointer = Entry*;
 
         Iterator() = default;
+        explicit Iterator(Node* node);
 
         reference operator*() const;
         pointer operator->() const;
@@ -66,6 +67,7 @@ public:
         Node* node_ = nullptr;
     };
 
+    // Read-only iterator
     class ConstIterator
     {
         friend class SkipList;
@@ -158,6 +160,15 @@ private:
     Node* head_ = nullptr;
     size_type size_ = 0;
     std::size_t max_height_ = 1;
+};
+
+template <typename Value>
+class SkipList<Value, void> : public SkipList<kvstore::Key, Value>
+{
+    using Base = SkipList<kvstore::Key, Value>;
+
+public:
+    using Base::Base;
 };
 
 } // namespace kvstore::core::memtable

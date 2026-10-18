@@ -7,12 +7,20 @@ namespace kvstore::core::memtable
 
 struct MemTableRecord
 {
-    Key key;
-    Sequence sequence;
-    RecordType type;
-    Value value;
+    Key key_;
+    Sequence sequence_;
+    RecordType type_;
+    Value value_;
 
-    MemTableRecord(MemTableRecord&& mr) : key(std::move(mr.value)), sequence(std::move(mr.sequence)), type(std::move(mr.type)), value(std::move(mr.value)) {}
+    MemTableRecord(MemTableRecord&& mr) noexcept;
+
+    MemTableRecord(const Key& key, Sequence sequence, RecordType type, const Value& value) noexcept;
+
+    MemTableRecord(const Key& key, Sequence sequence, RecordType type, Value&& value) noexcept;
+
+    MemTableRecord(Key&& key, Sequence sequence, RecordType type, Value&& value) noexcept;
+
+    MemTableRecord& operator=(MemTableRecord&& mr) noexcept;
     
 };
     
