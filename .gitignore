@@ -1,4 +1,5 @@
 build/
+thirdparty/FlameGraph/
 
 #软链接
 compile_commands.json
