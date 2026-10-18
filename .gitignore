@@ -31,3 +31,5 @@ install_manifest.txt
 .vscode/tasks.json
 # 如果你想保留vscode配置，删掉上面三行
 .idea/
+
+perf-out
