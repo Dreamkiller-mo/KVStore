@@ -32,5 +32,8 @@ install_manifest.txt
 # 如果你想保留vscode配置，删掉上面三行
 .idea/
 
-#flamegraph
+# flamegraph
 perf-out
+
+# cache
+*.cache
