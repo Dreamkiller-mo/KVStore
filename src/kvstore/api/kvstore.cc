@@ -27,7 +27,7 @@ kvstore::Status KVStore::Put(std::string_view key , std::string_view value)
     auto sequence = *res;
 
     // memtable
-    spdlog::info("KVStore::Put ---> memtable_ -> Put");
+    spdlog::info("KVStore::Put:memtable_ -> Put");
     return memtable_->Put(key_bytes, value_bytes, sequence);
 }
 

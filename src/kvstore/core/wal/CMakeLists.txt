@@ -10,7 +10,6 @@ FetchContent_MakeAvailable(absl)
 
 add_library(wal
     crc32c.cc
-    encoder.cc
     file_committer.cc
     wal_codec.cc
     wal_manager.cc
@@ -32,4 +31,5 @@ target_link_libraries(wal
     PRIVATE
         absl::crc32c
         absl::strings
+        kvstore_common
 )  

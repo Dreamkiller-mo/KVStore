@@ -10,7 +10,7 @@ namespace kvstore
     using Sequence = std::uint64_t;
 
     // operation type
-    enum class RecordType : std::uint8_t
+    enum class OperatorType : std::uint8_t
     {
         PUT,
         DELETE

@@ -6,7 +6,12 @@ using namespace kvstore::core::memtable;
 
 kvstore::Status SkipMemTable::Put(const Key& key, const Value& value, Sequence sequence)
 {
-    MemTableRecord record(key, sequence, RecordType::PUT, value);
+    auto existing = skip_list_.find(key);
+    if (existing != skip_list_.end() && existing->second.sequence_ > sequence)
+    {
+        return kvstore::Status{StatusCode::Ok, "Newer value already exists"};
+    }
+    MemTableRecord record(key, sequence, false, value);
     auto [it, inserted] = skip_list_.insert_or_assign(key, std::move(record));
     if (!inserted) { spdlog::info("SkipMemTable::Put: key already exists, updated value"); }
 
@@ -27,7 +32,7 @@ kvstore::Status SkipMemTable::Get(const Key& key, const Value** value) const
     }
 
     const MemTableRecord& record = it->second;
-    if (record.type_ == RecordType::DELETE)
+    if (record.deleted_)
     {
         return kvstore::Status{ StatusCode::NotFound, "Key has been deleted" };
     }
@@ -39,12 +44,19 @@ kvstore::Status SkipMemTable::Get(const Key& key, const Value** value) const
 kvstore::Status SkipMemTable::Delete(const Key& key, Sequence sequence)
 {
     auto it = skip_list_.find(key);
-    if (it == skip_list_.end() || it->second.type_ == RecordType::DELETE)
+    if (it != skip_list_.end() && it->second.sequence_ > sequence)
     {
-        return kvstore::Status{ StatusCode::NotFound, "Key not found" };
+        return kvstore::Status{StatusCode::Ok, "Newer value already exists"};
     }
 
-    it->second = MemTableRecord(key, sequence, RecordType::DELETE, Value{});
+    if (it == skip_list_.end())
+    {
+        skip_list_.insert(key, MemTableRecord(key, sequence, true, Value{}));
+    }
+    else
+    {
+        it->second = MemTableRecord(key, sequence, true, Value{});
+    }
     return kvstore::Status{ StatusCode::Ok, "Delete operation successful" };
 }
 
@@ -55,7 +67,12 @@ size_t SkipMemTable::Size() const
 
 kvstore::Status SkipMemTable::Put(const Key& key, Value&& value, Sequence sequence)
 {
-    MemTableRecord record(key, sequence, RecordType::PUT, std::move(value));
+    auto existing = skip_list_.find(key);
+    if (existing != skip_list_.end() && existing->second.sequence_ > sequence)
+    {
+        return kvstore::Status{StatusCode::Ok, "Newer value already exists"};
+    }
+    MemTableRecord record(key, sequence, false, std::move(value));
     auto [it, inserted] = skip_list_.insert_or_assign(key, std::move(record));
     if (!inserted) { spdlog::info("SkipMemTable::Put: key already exists, updated value"); }
 

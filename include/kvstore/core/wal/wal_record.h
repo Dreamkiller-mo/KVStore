@@ -12,11 +12,11 @@ namespace kvstore::core::wal
 
 class Operation;
 
-using WALRecordType = kvstore::RecordType;
+using OperatorType = kvstore::OperatorType;
 
 struct PutWALRecord
 {
-    WALRecordType type = WALRecordType::PUT;
+    OperatorType type = OperatorType::PUT;
 
     Key key;
 
@@ -28,7 +28,7 @@ struct PutWALRecord
 
 struct DeleteWALRecord
 {
-    WALRecordType type = WALRecordType::DELETE;
+    OperatorType type = OperatorType::DELETE;
 
     Key key;
 
@@ -41,15 +41,9 @@ struct DeleteWALRecord
 template<typename T>
 concept WALOperation = requires(T record)
 {
-    requires std::same_as<
-        std::remove_cvref_t<decltype(record.type)>,
-        WALRecordType
-    >;
+    requires std::same_as<std::remove_cvref_t<decltype(record.type)>, OperatorType>;
 
-    requires std::same_as<
-        std::remove_cvref_t<decltype(record.key)>,
-        Key
-    >;
+    requires std::same_as<std::remove_cvref_t<decltype(record.key)>, Key>;
 };
 
 // encapsulate (封装) std::variant

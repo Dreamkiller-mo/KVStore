@@ -23,7 +23,7 @@ Rather than focusing only on implementing individual data structures, the projec
 
 ## ✨ Current Status
 
-The project is currently in the **WAL / core storage foundation stage**.
+The project is currently in the **WAL, MemTable, and SSTable foundation stage**.
 
 ### Implemented
 
@@ -48,17 +48,21 @@ The project is currently in the **WAL / core storage foundation stage**.
 - [x] `InvalidArgument` / `InvalidState` error semantics
 - [x] Structured logging with `spdlog`
 - [x] WAL failure-path testing
+- [x] MemTable PUT / GET / DELETE with sequence-aware replacement
+- [x] Shared little-endian Encoder / Decoder primitives
+- [x] Sorted SSTable builder and version index
+- [x] SSTable lookup, snapshot reads, and version-preserving compaction
 - [x] CMake dependency management with `FetchContent`
 
 ### Architecture Designed / In Progress
 
 The following components are part of the planned storage architecture but are **not yet fully implemented**:
 
-- [ ] MemTable
+- [x] MemTable
 - [ ] Immutable MemTable
-- [ ] SSTable
+- [x] SSTable
 - [ ] Bloom Filter
-- [ ] SSTable Index
+- [x] SSTable Index
 - [ ] Data Block
 - [ ] Block Cache
 - [ ] Leveled Compaction
@@ -284,6 +288,29 @@ The important design principle is:
 > **File provides file operations; FileCommitter defines the persistence procedure.**
 
 This keeps binary encoding, persistence policy, and low-level file operations independent.
+
+---
+
+# 🗃️ SSTable Foundation
+
+The current SSTable format is intentionally a simple foundation; it does not
+yet include data blocks, a Bloom filter, or a persisted index.
+
+```text
+Header:    magic ("KVSTBL01") | record count
+Record:    frame length | key length | value length | sequence | deleted flag | key | value
+```
+
+`SSTableBuilder` sorts records by key in ascending order and sequence in
+descending order. `SSTable::Open` validates this order and builds an in-memory
+key/sequence-to-file-offset index, which supports snapshot-aware lookup.
+`SSTable::Compact` merges tables and deduplicates identical versions. It retains
+tombstones because removing one is only safe when compaction knows no lower
+level can contain an older value.
+
+`kvstore::common::Encoder` and `Decoder` provide shared little-endian byte
+primitives. WAL and SSTable codecs retain ownership of their respective record
+and file formats.
 
 ---
 
@@ -803,6 +830,24 @@ The project intends to use:
 
 Optimization decisions should be supported by measurements rather than assumptions.
 
+### Running microbenchmarks
+
+Build and run selected Google Benchmark cases with:
+
+```bash
+cmake --build --preset benchmark
+./build/benchmark/benchmark/kvstore_bench \
+  --benchmark_filter='BM_(MemTable|SSTable).*' \
+  --benchmark_min_time=0.1s
+```
+
+The suite includes MemTable PUT/GET and SSTable build, open/index, point lookup,
+and four-input compaction cases. Setup work (dataset creation and input table
+construction) is excluded from those operation timings. `BM_Put` measures the
+durable KVStore write path, while `BM_Get` measures the current KVStore API read
+path; neither represents an SSTable-backed end-to-end read path yet. SSTable
+build measures file writing and flushing, not an `fsync` durability guarantee.
+
 ### CPU flame graph
 
 On Linux, build the benchmark target and run the profiling script from any
@@ -942,22 +987,22 @@ Benchmark Again
 
 ## Phase 2 — MemTable
 
-- [ ] `IMemTable`
-- [ ] Skip List MemTable
-- [ ] Put / Get / Delete
+- [x] `IMemTable`
+- [x] Skip List MemTable
+- [x] Put / Get / Delete
 - [ ] Immutable MemTable
 - [ ] Memory-pressure management
-- [ ] MemTable benchmarks
+- [x] MemTable benchmarks
 
 ## Phase 3 — SSTable
 
-- [ ] SSTable format
+- [x] SSTable format
 - [ ] Data Block
-- [ ] Index
+- [x] In-memory index
 - [ ] Bloom Filter
-- [ ] SSTable Builder
-- [ ] SSTable Reader
-- [ ] SSTable loading
+- [x] SSTable Builder
+- [x] SSTable Reader
+- [x] SSTable loading
 
 ## Phase 4 — Read Path
 
@@ -977,7 +1022,7 @@ Benchmark Again
 
 ## Phase 6 — Performance
 
-- [ ] Benchmark framework
+- [x] Benchmark framework
 - [ ] `perf` profiling
 - [ ] CPU flame graphs
 - [ ] I/O profiling

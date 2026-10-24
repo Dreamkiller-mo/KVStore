@@ -30,7 +30,7 @@ using namespace kvstore::core::wal;
 bool PutWALRecord::Encode(Encoder& enc) const
 {
     // fill type
-    enc.PutUint8(static_cast<std::uint8_t>(WALRecordType::PUT));
+    enc.PutUint8(static_cast<std::uint8_t>(OperatorType::PUT));
 
     // fill key length
     enc.PutUint64(static_cast<std::uint64_t>(key.size()));
@@ -50,7 +50,7 @@ bool PutWALRecord::Encode(Encoder& enc) const
 bool DeleteWALRecord::Encode(Encoder& enc) const
 {
     // fill type
-    enc.PutUint8(static_cast<std::uint8_t>(WALRecordType::DELETE));
+    enc.PutUint8(static_cast<std::uint8_t>(OperatorType::DELETE));
 
     // fill key length
     enc.PutUint64(static_cast<std::uint64_t>(key.size()));
